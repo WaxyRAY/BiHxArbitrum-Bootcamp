@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.19;
+
+contract Training6 {
+
+    uint256 count = 1;
+
+    function counter() public view returns(uint256) {
+        return count;
+    }
+
+    function increment() public returns(uint256) {
+       return count++;
+    }
+
+    function OddEven() public returns(string memory) {
+        count = count % 2;
+        if(count == 0) {return 'even';
+      }
+        else {return 'odd';
+        }
+    }
+    function Findmsb() public returns(uint256) {
+        uint256 msb = 0;
+        while (count > 0) {
+            count = count >> 1;
+            msb++;
+        }
+        return msb;
+    }
+}
