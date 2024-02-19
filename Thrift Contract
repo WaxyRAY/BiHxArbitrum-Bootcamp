@@ -1,1 +1,41 @@
+// SPDX-License-Identifier: MIT
 
+pragma solidity 0.8.19;
+
+contract Thrift{
+    uint256 public immutable goal;
+
+    uint256 public progress;
+
+    address payable owner;
+
+    struct Contributors{
+        uint256 contributedAmount;
+        bool isActive;
+    }
+
+    mapping (address => Contributors) contributors;
+
+    constructor(uint256 goal_){
+        goal=goal_;
+        owner= payable (msg.sender);
+    }
+
+    function deposit() external payable {
+        progress += msg.value;
+        require(msg.value > 100 wei, "You have not reached amount to be contributed");
+       contributors[msg.sender].contributedAmount +=msg.value;
+       contributors[msg.sender].isActive = true;
+       
+    }
+
+    function balance() public view returns(uint256){
+        return address(this).balance;
+    }
+
+    function withdraw(uint256 Amount) public {
+        owner.transfer(Amount); //(address(this).balance);
+        require(msg.sender == owner, "Only the owner can withdraw funds");
+        require(Amount >= 10000 wei, "Contribution limit not reached");
+    }
+}
