@@ -1,1 +1,33 @@
+// SPDX-License-Identifier: MIT
 
+pragma solidity 0.8.19;
+
+contract ModifiedDonation{
+
+    uint256 public immutable goal;
+
+    uint256 public progress;
+
+    address payable owner;
+
+    constructor(uint256 goal_){
+        goal=goal_;
+        owner= payable (msg.sender);
+    }
+
+    function deposit() external payable{
+        progress += msg.value;
+        require(msg.value == 10 wei, "Donated amount must be 10 wei");
+    }    
+
+    function balance() public view returns(uint256){
+        return address(this).balance;
+    }
+
+    function withdraw() public {
+        owner.transfer (address(this).balance);
+       require(address(this).balance == goal, "Goal not reached");
+       
+    }
+
+   }
