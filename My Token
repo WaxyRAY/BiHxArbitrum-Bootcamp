@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.19;
+
+contract Rah_Token{
+    string public name;
+    string public symbol;
+
+    uint256 public nextTokenID;
+    address public contractOwner;
+
+    //Token id=owner
+    mapping (uint256 => address) public owners;
+    //Token count
+    mapping (address => uint256) public _balances;
+    //Token id => approved address
+    mapping (uint256 => address) public ApprovedTokens;
+    //Token id => token uris
+    mapping (uint256 => string) _tokenUris;
+    //owner => (operator =>yes/no)
+    mapping(address => mapping (address => bool)) public _operatorApproval;
+
+    event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
+    event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
+    event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
+    constructor(string memory _name, string memory _symbol){
+        name = _name;
+        symbol = _symbol;
+        contractOwner = msg.sender;
+        nextTokenID = 1;
+    }
+    // checks the balance of the address
+    function balance(address owners) public view returns(uint256){
+        require (owners !=address(0));
+        return _balances[owners];
+    }
+    // checkers the owner of the token
+    function ownerOf(uint256 tokenID) public view returns (address){
+        return owners[tokenID];
+    }
+    function transferFrom(address _from, address _to, uint256 _tokenId) public payable {
+        // unsafe transfer without onERC721Received, used for contracts that dont implement
+        require(ownerOf(_tokenId) == msg.sender || ApprovedTokens[_tokenId] == msg.sender || _operatorApproval[ownerOf(_tokenId)][msg.sender], "!Auth");
+        emit Transfer(_from, _to, _tokenId);
+    }
+
+    function approve(address _approved, uint256 _tokenId) public payable {
+        require(ownerOf(_tokenId) == msg.sender, "!Owner");
+        ApprovedTokens[_tokenId] = _approved;
+        emit Approval(ownerOf(_tokenId), _approved, _tokenId);
+    }
+
+    function setApprovalForAll(address _operator, bool _approved) public {
+        _operatorApproval[msg.sender][_operator] = _approved;
+        emit ApprovalForAll(msg.sender, _operator, _approved);
+    }
+
+    function getApproved(uint256 _tokenId) public view returns (address) {
+        return ApprovedTokens[_tokenId];
+    }
+
+    function isApprovedForAll(address _owner, address _operator) public view returns (bool) {
+        return _operatorApproval[_owner][_operator];
+    }
+
+    function mintTo(address _to, string memory _uri) public {
+        require(contractOwner == msg.sender, "!Auth");
+        owners[nextTokenID] = _to;
+        _balances[_to] += 1;
+        _tokenUris[nextTokenID] = _uri;
+        emit Transfer(address(0), _to, nextTokenID);
+        nextTokenID += 1;
+    }
+     function tokenURI(uint256 _tokenId) public view returns(string memory) {
+        return _tokenUris[_tokenId];
+    }
+
+    function totalSupply() public view returns(uint256) {
+        return nextTokenID;
+    }
+
+}
